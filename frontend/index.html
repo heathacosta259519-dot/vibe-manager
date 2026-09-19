@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Vibe-Manager · VIBE CODING 项目管理器</title>
+</head>
+<body>
+<div id="app">
+    <aside class="rail" id="rail">
+        <div class="brand">
+            <img class="brand-logo" src="./src/assets/images/logo.png" alt="Vibe Manager"/>
+            <span class="brand-version" id="brand-version"></span>
+        </div>
+
+        <nav class="rail-nav">
+            <button class="rail-item" id="btn-new">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                新建项目
+            </button>
+            <button class="rail-item" id="btn-import">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                导入项目
+            </button>
+
+            <div class="rail-sep"></div>
+
+            <button class="rail-item" id="tab-projects" data-view="projects">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5 12 3l8 4.5-8 4.5-8-4.5Z"/><path d="M4 12.5 12 17l8-4.5M4 16.5 12 21l8-4.5"/></svg>
+                项目
+                <span class="rail-count" id="count-projects"></span>
+            </button>
+            <button class="rail-item" id="tab-search" data-view="search">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+                搜索
+            </button>
+            <button class="rail-item" id="tab-archives" data-view="archives">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5h18V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Z"/><path d="M4.5 7.5 6.5 3h11l2 4.5M9.5 12.5h5"/></svg>
+                归档
+                <span class="rail-count" id="count-archives"></span>
+            </button>
+        </nav>
+
+        <div class="rail-filter">
+            <div class="search-wrap">
+                <input id="search" class="input search" type="text" autocomplete="off" placeholder="筛选项目…"/>
+                <button id="search-clear" class="input-clear hidden" title="清除筛选">✕</button>
+            </div>
+            <div id="filters" class="chips">
+                <button class="chip active" data-filter="all">全部</button>
+                <button class="chip" data-filter="dirty">有改动</button>
+                <button class="chip" data-filter="noupstream">未设上游</button>
+                <button class="chip" data-filter="stale">30 天未动</button>
+                <button class="chip" data-filter="nogit">非 git</button>
+            </div>
+            <div class="sort-row">
+                <select id="sort" class="input sort">
+                    <option value="activity">最后活动</option>
+                    <option value="name">名称</option>
+                    <option value="ahead">未推送数</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="project-list" class="rail-list" role="listbox"></div>
+
+        <div class="rail-foot">
+            <button class="rail-item" id="btn-settings">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2M12 18.5v2M4.9 7.8l1.7 1M17.4 15.2l1.7 1M4.9 16.2l1.7-1M17.4 8.8l1.7-1"/></svg>
+                设置
+            </button>
+        </div>
+    </aside>
+
+    <div id="rail-resizer" class="rail-resizer" role="separator" aria-orientation="vertical" title="拖动调整左栏宽度"></div>
+
+    <main class="content">
+        <div class="content-top">
+            <span class="content-title" id="content-title">项目</span>
+            <span class="grow"></span>
+            <span class="pill" id="status-pill" title="当前状态">
+                <span class="dot nogit" id="status-pill-dot"></span>
+                <span id="status-pill-text">未选择项目</span>
+            </span>
+            <button class="icon-btn" id="btn-theme" title="切换日间 / 夜间">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A7.8 7.8 0 0 1 9.8 4 7.6 7.6 0 1 0 20 14.2Z"/></svg>
+            </button>
+            <button class="icon-btn" id="btn-refresh" title="重新扫描项目">
+                <svg class="ic-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg>
+            </button>
+        </div>
+
+        <section id="projects-view" class="view">
+            <section id="detail" class="detail"></section>
+        </section>
+        <section id="search-view" class="view archives hidden"></section>
+        <section id="archives-view" class="view archives hidden"></section>
+        <section id="settings-view" class="view hidden"></section>
+
+        <footer class="statusbar" id="statusbar"></footer>
+    </main>
+
+    <div id="fx-resizer" class="fx-resizer hidden" role="separator" aria-orientation="vertical" title="拖动调整编辑器宽度"></div>
+    <aside id="fx-editor" class="fx-editor hidden"></aside>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<script src="./src/main.ts" type="module"></script>
+</body>
+</html>
