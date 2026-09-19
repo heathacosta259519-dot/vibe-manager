@@ -294,6 +294,22 @@ body { overflow: hidden; }
 
 .pill .dot { width: 7px; height: 7px; }
 
+/* 顶栏的更新提示：只有真有新版本时才出现（按钮元素，要显式接管字体与手型） */
+.upd-pill { cursor: pointer; border-color: var(--accent); font-family: inherit; }
+.upd-pill:hover { background: var(--select); }
+.upd-dot { background: var(--accent); }
+
+/* 更新弹窗里的发布说明：限高自己滚，别把弹窗撑破 */
+.upd-notes {
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    padding: var(--sp-3);
+    font-size: 13px;
+}
+
 .icon-btn {
     display: inline-flex;
     align-items: center;

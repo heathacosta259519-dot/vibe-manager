@@ -5,9 +5,13 @@ import {agents} from '../models';
 
 export function AppVersion():Promise<string>;
 
+export function ApplyUpdate():Promise<string>;
+
 export function ArchiveProject(arg1:string,arg2:boolean):Promise<string>;
 
 export function CheckConflicts(arg1:string,arg2:Array<string>,arg3:string):Promise<Array<string>>;
+
+export function CheckUpdate():Promise<model.UpdateInfo>;
 
 export function ChooseFolder(arg1:string):Promise<string>;
 

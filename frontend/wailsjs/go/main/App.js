@@ -6,12 +6,20 @@ export function AppVersion() {
   return window['go']['main']['App']['AppVersion']();
 }
 
+export function ApplyUpdate() {
+  return window['go']['main']['App']['ApplyUpdate']();
+}
+
 export function ArchiveProject(arg1, arg2) {
   return window['go']['main']['App']['ArchiveProject'](arg1, arg2);
 }
 
 export function CheckConflicts(arg1, arg2, arg3) {
   return window['go']['main']['App']['CheckConflicts'](arg1, arg2, arg3);
+}
+
+export function CheckUpdate() {
+  return window['go']['main']['App']['CheckUpdate']();
 }
 
 export function ChooseFolder(arg1) {

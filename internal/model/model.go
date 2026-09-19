@@ -57,6 +57,16 @@ type Project struct {
 	LastCommitAt   int64  `json:"lastCommitAt"`
 }
 
+// UpdateInfo 是「检查更新」的结果。没有新版本时 Available=false，其余字段仍会带上当前版本。
+type UpdateInfo struct {
+	Available bool   `json:"available"`
+	Current   string `json:"current"`
+	Latest    string `json:"latest"`
+	Notes     string `json:"notes"`   // release 正文（Markdown）
+	Size      int64  `json:"size"`    // 附件字节数
+	PageURL   string `json:"pageURL"` // release 页面，供「查看详情」
+}
+
 // TextFile 是编辑器的读取结果。
 type TextFile struct {
 	Content   string `json:"content"`

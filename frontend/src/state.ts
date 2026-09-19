@@ -20,6 +20,7 @@ export type Remote = model.Remote;
 export type GitOpResult = model.OpResult;
 export type Branch = model.Branch;
 export type Tag = model.Tag;
+export type UpdateInfo = model.UpdateInfo;
 
 export type FilterKey = 'all' | 'dirty' | 'noupstream' | 'stale' | 'nogit';
 export type SortKey = 'activity' | 'name' | 'ahead';
@@ -42,6 +43,9 @@ export const state = {
     configPath: '',
     logPath: '',
     version: '',
+
+    // 最近一次「检查更新」的结果；null 表示还没查过（或查询失败）
+    update: null as UpdateInfo | null,
 
     projects: [] as Project[],
     archives: [] as ArchiveEntry[],

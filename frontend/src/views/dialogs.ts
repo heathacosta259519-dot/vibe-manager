@@ -1,6 +1,7 @@
 import { App, openInEditor } from '../api';
-import { esc, renderDiffText } from '../format';
-import { type AgentTemplate, type FileChange, type Project } from '../state';
+import { esc, fmtSize, renderDiffText } from '../format';
+import { renderMarkdown } from '../markdown';
+import { type AgentTemplate, type FileChange, type Project, type UpdateInfo } from '../state';
 import { closeModal, confirmDialog, openModal, renderEmpty, renderLoading, toast, withBusy } from '../ui';
 
 const FILE_KINDS: Record<string, { label: string; cls: string }> = {
@@ -93,6 +94,47 @@ export async function showCommitFiles(p: Project, sha: string): Promise<void> {
     // 直接把第一个文件展开，省得还要多点一下
     const first = listEl.querySelector<HTMLElement>('.cf-item');
     if (first) void pick(first);
+}
+
+/* ---------------- 更新 ---------------- */
+
+/**
+ * 发现新版本时的弹窗：说清新旧版本与体积，确认后下载、替换并自动重启。
+ * 下载与校验都在后端完成，界面这里只管确认和反馈。
+ */
+export function openUpdateDialog(info: UpdateInfo): void {
+    const root = openModal(`
+        <h3>发现新版本 v${esc(info.latest)}</h3>
+        <div class="modal-body">
+            <div class="hint">当前 v${esc(info.current)}${
+                info.size > 0 ? ` · 安装包 ${esc(fmtSize(info.size))}` : ''
+            }</div>
+            ${
+                info.notes
+                    ? `<div class="upd-notes">${renderMarkdown(info.notes)}</div>`
+                    : '<div class="hint">这次发布没有写说明。</div>'
+            }
+            <div class="hint">下载并校验完成后，程序会关闭、替换文件，然后自动重新打开。</div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn ghost" data-act="cancel">稍后</button>
+            <button class="btn primary" data-act="ok">下载并重启</button>
+        </div>
+    `);
+
+    root.querySelector('[data-act="cancel"]')!.addEventListener('click', () => closeModal());
+
+    const ok = root.querySelector('[data-act="ok"]') as HTMLButtonElement;
+    ok.addEventListener('click', () => {
+        void withBusy(ok, async () => {
+            try {
+                // 成功时后端会在一秒内退出程序，这条提示是它关掉前最后看到的东西
+                toast(await App.ApplyUpdate());
+            } catch (e) {
+                toast(String(e), 'err');
+            }
+        });
+    });
 }
 
 /* ---------------- AGENTS.md 模板管理 ---------------- */

@@ -7,6 +7,7 @@ import { confirmDialog, toast, withBusy } from './ui';
 import { renderArchives } from './views/archives';
 import { refreshArchives, refreshProjects } from './views/data';
 import { openCompare } from './views/compare';
+import { openUpdateDialog } from './views/dialogs';
 import { enterSettings, leaveSettings, settingsDirty } from './views/settings';
 import { openExplorer } from './views/explorer';
 import { reconfigureEditorTheme, renderEditorPane, wireResizer } from './views/editor';
@@ -189,6 +190,36 @@ async function applyVersion(): Promise<void> {
     }
 }
 
+/* ---------------- 更新提示 ---------------- */
+
+/** 按最近一次检查结果刷新顶栏的更新胶囊。 */
+function applyUpdateBadge(): void {
+    const btn = document.getElementById('btn-update');
+    if (!btn) return;
+    const info = state.update;
+    if (info?.available) {
+        const text = document.getElementById('btn-update-text');
+        if (text) text.textContent = `新版本 v${info.latest}`;
+        btn.title = `有新版本 v${info.latest}，点击查看`;
+        btn.classList.remove('hidden');
+    } else {
+        btn.classList.add('hidden');
+    }
+}
+
+/**
+ * 启动时静默查一次更新。断网、被墙、GitHub 限流都算正常情况，
+ * 一律不打扰用户，只是没有提示而已（设置页里可以手动再查）。
+ */
+async function checkUpdate(): Promise<void> {
+    try {
+        state.update = await App.CheckUpdate();
+    } catch {
+        state.update = null;
+    }
+    applyUpdateBadge();
+}
+
 function wireStatic(): void {
     document.getElementById('btn-new')!.addEventListener('click', openNewProject);
     document.getElementById('btn-import')!.addEventListener('click', e => void importProject(e.currentTarget as HTMLElement));
@@ -198,6 +229,9 @@ function wireStatic(): void {
     });
     document.getElementById('btn-theme')!.addEventListener('click', () => {
         void setTheme(state.cfg.theme === 'dark' ? 'light' : 'dark');
+    });
+    document.getElementById('btn-update')!.addEventListener('click', () => {
+        if (state.update?.available) openUpdateDialog(state.update);
     });
 
     document.getElementById('tab-projects')!.addEventListener('click', () => setView('projects'));
@@ -270,6 +304,7 @@ async function init(): Promise<void> {
     };
     // force 是内部用来避免确认后被自己再拦一次的参数，不外泄给调用方
     hooks.setView = (view, after) => setView(view, false, after);
+    hooks.updateBadge = applyUpdateBadge;
 
     wireStatic();
     applyTheme();
@@ -277,6 +312,7 @@ async function init(): Promise<void> {
     wireRailResizer();
     wireResizer();
     void applyVersion();
+    void checkUpdate();
     setView('projects');
     renderDetail();
     await Promise.all([refreshProjects(), refreshArchives()]);

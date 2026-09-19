@@ -22,6 +22,7 @@ import (
 	"vibe-manager/internal/model"
 	"vibe-manager/internal/project"
 	"vibe-manager/internal/taskdoc"
+	"vibe-manager/internal/update"
 )
 
 type App struct {
@@ -36,6 +37,10 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.applyTheme()
+	// 上次更新换下来的旧程序与残留下载，这时候已经没人占用，顺手清掉
+	if exe, err := os.Executable(); err == nil {
+		update.CleanupStale(exe)
+	}
 	if strings.TrimSpace(a.cfg.Author) == "" {
 		if name := gitx.GlobalUserName(); name != "" {
 			a.cfg.Author = name
@@ -119,6 +124,69 @@ func (a *App) ConfigPath() string {
 // AppVersion 返回运行时版本号，供界面显示在左上角 logo 下方。
 func (a *App) AppVersion() string {
 	return Version
+}
+
+/* ---------------- 更新 ---------------- */
+
+// CheckUpdate 查询公开仓库有没有更高版本。没有新版本时 Available 为 false。
+func (a *App) CheckUpdate() (model.UpdateInfo, error) {
+	info := model.UpdateInfo{Current: Version}
+	rel, err := update.Latest(Version)
+	if err != nil {
+		logError("CheckUpdate", err)
+		return info, err
+	}
+	if rel == nil {
+		return info, nil
+	}
+	info.Available = true
+	info.Latest = rel.Version
+	info.Notes = rel.Notes
+	info.Size = rel.Size
+	info.PageURL = rel.PageURL
+	return info, nil
+}
+
+// ApplyUpdate 下载新版本、替换当前程序，然后退出并自动重启。
+// 下载与校验都在替换之前做完：任何一步失败都不会动到正在用的程序。
+func (a *App) ApplyUpdate() (string, error) {
+	rel, err := update.Latest(Version)
+	if err != nil {
+		logError("ApplyUpdate/check", err)
+		return "", err
+	}
+	if rel == nil {
+		return "已经是最新版本", nil
+	}
+
+	exe, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf("无法定位当前程序：%v", err)
+	}
+
+	downloaded := exe + ".new"
+	if err := update.Download(rel, downloaded); err != nil {
+		logError("ApplyUpdate/download", err)
+		return "", err
+	}
+	if err := update.Swap(exe, downloaded, exe+".old"); err != nil {
+		_ = os.Remove(downloaded)
+		logError("ApplyUpdate/swap", err)
+		return "", err
+	}
+
+	// 程序已经换好了。先排好「本进程退出后再启动」，再退出——
+	// 顺序反过来的话新进程会被单实例锁顶掉。
+	note := ""
+	if err := update.RelaunchDetached(exe, os.Getpid(), 120*time.Second); err != nil {
+		logError("ApplyUpdate/relaunch", err)
+		note = "；自动重启没排上，请手动打开程序"
+	}
+	go func() {
+		time.Sleep(900 * time.Millisecond) // 留点时间让界面把结果提示出来
+		runtime.Quit(a.ctx)
+	}()
+	return fmt.Sprintf("已更新到 v%s，正在重启…%s", rel.Version, note), nil
 }
 
 func (a *App) ChooseFolder(title string) (string, error) {

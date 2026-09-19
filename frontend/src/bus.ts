@@ -13,6 +13,8 @@ export type Hooks = {
      * 「用户点了确认才切」的情况；用户取消则整个不会执行。
      */
     setView(view: ViewKey, after?: () => void): boolean;
+    /** 重新按 state.update 刷新顶栏的更新提示（手动检查完之后调用）。 */
+    updateBadge(): void;
     status(): void;
 };
 
@@ -25,5 +27,6 @@ export const hooks: Hooks = {
     setView() {
         return false;
     },
+    updateBadge() {},
     status() {},
 };

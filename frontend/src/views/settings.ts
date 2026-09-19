@@ -3,7 +3,7 @@ import { hooks } from '../bus';
 import { esc } from '../format';
 import { state } from '../state';
 import { copyText, toast, withBusy } from '../ui';
-import { openTemplateManager } from './dialogs';
+import { openTemplateManager, openUpdateDialog } from './dialogs';
 import { refreshArchives, refreshProjects } from './data';
 
 /* ---------------- 编辑草稿 ----------------
@@ -199,6 +199,24 @@ function syncVersion(): void {
     if (el && state.version) el.textContent = `v${state.version}`;
 }
 
+/** 把「有没有新版本」同步到「关于」区那一行；announce 为真时顺便说出来。 */
+function syncUpdateState(announce = false): void {
+    const label = document.getElementById('set-update-state');
+    if (!label) return;
+    const info = state.update;
+    const doBtn = document.getElementById('set-do-update');
+
+    if (info?.available) {
+        label.textContent = `有新版本 v${info.latest}`;
+        doBtn?.classList.remove('hidden');
+        if (announce) toast(`发现新版本 v${info.latest}`);
+        return;
+    }
+    doBtn?.classList.add('hidden');
+    label.textContent = info ? '已是最新版本' : '';
+    if (announce && info) toast(`已是最新版本（v${info.current}）`);
+}
+
 function syncTplCount(): void {
     const el = document.getElementById('set-tpl-count');
     if (el) el.textContent = tplCount >= 0 ? `共 ${tplCount} 份可选` : '';
@@ -317,6 +335,24 @@ function wire(el: HTMLElement): void {
         });
     });
 
+    el.querySelector('#set-check-update')?.addEventListener('click', ev => {
+        const btn = ev.currentTarget as HTMLElement;
+        void withBusy(btn, async () => {
+            try {
+                state.update = await App.CheckUpdate();
+            } catch (e) {
+                toast(String(e), 'err');
+                return;
+            }
+            hooks.updateBadge();
+            syncUpdateState(true);
+        });
+    });
+
+    el.querySelector('#set-do-update')?.addEventListener('click', () => {
+        if (state.update?.available) openUpdateDialog(state.update);
+    });
+
     el.querySelector('#set-revert')?.addEventListener('click', revert);
 
     const saveBtn = el.querySelector('#set-save') as HTMLButtonElement;
@@ -350,9 +386,12 @@ export function renderSettings(): void {
                 </div>`)}
                 ${section('keys', '快捷键', '只在对应场景里生效', keysBody())}
                 ${section('about', '关于', '版本与数据位置；这两处都不在项目目录里', `<div class="set-rows">
-                    ${row('版本', null, `<code class="set-mono" id="set-version">${
-                        state.version ? `v${esc(state.version)}` : '—'
-                    }</code>`)}
+                    ${row('版本', null, `<div class="set-info">
+                        <code class="set-mono" id="set-version">${state.version ? `v${esc(state.version)}` : '—'}</code>
+                        <span class="hint" id="set-update-state"></span>
+                        <button class="btn tiny ghost hidden" type="button" id="set-do-update">更新…</button>
+                        <button class="btn tiny ghost" type="button" id="set-check-update">检查更新</button>
+                    </div>`)}
                     ${row('配置文件', null, pathInfo(state.configPath, 'cfg'))}
                     ${row('日志文件', null, pathInfo(state.logPath, 'log'))}
                 </div>`)}
@@ -369,6 +408,7 @@ export function renderSettings(): void {
     syncBar();
     syncFontPreview();
     syncVersion();
+    syncUpdateState();
     syncTplCount();
 }
 
