@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/badge/platform-Windows-1e2f52?style=flat-square" alt="Windows">
     <img src="https://img.shields.io/badge/Go-1.25-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go">
     <img src="https://img.shields.io/badge/Wails-v2-E34F26?style=flat-square" alt="Wails">
-    <img src="https://img.shields.io/badge/version-0.5.0-1e2f52?style=flat-square" alt="0.5.0">
+    <img src="https://img.shields.io/badge/version-0.5.1-1e2f52?style=flat-square" alt="0.5.1">
     <img src="https://img.shields.io/badge/license-MIT-4c9a5f?style=flat-square" alt="MIT">
   </p>
 </div>
@@ -158,7 +158,7 @@ wails dev            # 开发模式（热重载）
 
 | 文件 | 内容 |
 | --- | --- |
-| `config.json` | 界面配置：项目根、归档根、编辑器 / 终端命令、主题、窗口尺寸、编辑器字体 |
+| `config.json` | 界面配置：项目根、归档根、编辑器 / 终端命令、主题、窗口尺寸、编辑器字体、编辑器 / 界面字号 |
 | `projects.json` | 项目元数据：备注名、实际根目录、导入列表 |
 | `agents-templates.json` | 你自建的 AGENTS.md 模板 |
 | `vibe-pm.log` | 运行日志。GUI 没有控制台，出错靠它留痕 |

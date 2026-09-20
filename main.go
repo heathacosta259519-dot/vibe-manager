@@ -15,7 +15,7 @@ var assets embed.FS
 
 // Version 是运行时版本号，界面把它显示在左上角 logo 下方，也是版本的唯一真源。
 // 发布构建可用 -ldflags "-X main.Version=X.Y.Z" 覆盖；日常改版本就改这里。
-var Version = "0.5.0"
+var Version = "0.5.1"
 
 func main() {
 	app := NewApp()

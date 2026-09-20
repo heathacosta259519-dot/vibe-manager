@@ -107,6 +107,8 @@ func (a *App) SaveConfig(cfg model.Config) (model.Config, error) {
 	}
 	cfg.EditorWidth = config.ClampEditorWidth(cfg.EditorWidth)
 	cfg.RailWidth = config.ClampRailWidth(cfg.RailWidth)
+	cfg.EditorFontSize = config.ClampEditorFontSize(cfg.EditorFontSize)
+	cfg.UiFontSize = config.ClampUiFontSize(cfg.UiFontSize)
 	cfg.EditorFont = config.SanitizeFont(cfg.EditorFont)
 	cfg.Author = strings.TrimSpace(cfg.Author)
 	if err := config.Save(cfg); err != nil {

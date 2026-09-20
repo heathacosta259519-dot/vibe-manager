@@ -32,6 +32,8 @@ function applyTheme(): void {
         '--ed-font',
         font ? `"${font}", Consolas, "Courier New", monospace` : 'Consolas, "Cascadia Mono", "Courier New", monospace',
     );
+    document.documentElement.style.setProperty('--ed-font-size', `${state.cfg.editorFontSize || 14}px`);
+    document.documentElement.style.setProperty('--ui-scale', String((state.cfg.uiFontSize || 14) / 14));
     reconfigureEditorTheme();
 }
 

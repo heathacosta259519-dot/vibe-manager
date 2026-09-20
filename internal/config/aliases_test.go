@@ -163,3 +163,21 @@ func TestClampEditorWidth(t *testing.T) {
 		}
 	}
 }
+
+func TestClampEditorFontSize(t *testing.T) {
+	cases := map[int]int{0: DefaultEditorFontSize, -3: DefaultEditorFontSize, 5: MinEditorFontSize, 99: MaxEditorFontSize, 16: 16}
+	for in, want := range cases {
+		if got := ClampEditorFontSize(in); got != want {
+			t.Fatalf("ClampEditorFontSize(%d) = %d，期望 %d", in, got, want)
+		}
+	}
+}
+
+func TestClampUiFontSize(t *testing.T) {
+	cases := map[int]int{0: DefaultUiFontSize, -3: DefaultUiFontSize, 5: MinUiFontSize, 99: MaxUiFontSize, 16: 16}
+	for in, want := range cases {
+		if got := ClampUiFontSize(in); got != want {
+			t.Fatalf("ClampUiFontSize(%d) = %d，期望 %d", in, got, want)
+		}
+	}
+}

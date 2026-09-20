@@ -122,6 +122,8 @@ export namespace model {
 	    editorWidth: number;
 	    railWidth: number;
 	    editorFont: string;
+	    editorFontSize: number;
+	    uiFontSize: number;
 	    author: string;
 	
 	    static createFrom(source: any = {}) {
@@ -144,6 +146,8 @@ export namespace model {
 	        this.editorWidth = source["editorWidth"];
 	        this.railWidth = source["railWidth"];
 	        this.editorFont = source["editorFont"];
+	        this.editorFontSize = source["editorFontSize"];
+	        this.uiFontSize = source["uiFontSize"];
 	        this.author = source["author"];
 	    }
 	}

@@ -17,6 +17,10 @@ type Draft = Record<DraftKey, string>;
 const DRAFT_KEYS: DraftKey[] = ['projectRoot', 'archiveRoot', 'editorCmd', 'terminalCmd', 'editorFont', 'author'];
 
 let draft: Draft = { projectRoot: '', archiveRoot: '', editorCmd: '', terminalCmd: '', editorFont: '', author: '' };
+// 字号是数字，不进字符串草稿机制，单独存；越界值在输入时就 clamp，保证预览与保存所见即所得。
+// 界面字号不做实时预览：它直接改全局 --ui-scale，「放弃离开」路径没有还原因，保存后生效最稳。
+let draftFontSize = 14;
+let draftUiFontSize = 14;
 let editing = false;
 
 function resetDraft(): void {
@@ -28,12 +32,16 @@ function resetDraft(): void {
         editorFont: state.cfg.editorFont ?? '',
         author: state.cfg.author ?? '',
     };
+    draftFontSize = state.cfg.editorFontSize || 14;
+    draftUiFontSize = state.cfg.uiFontSize || 14;
 }
 
 /** 有未保存改动吗？没在编辑设置页时恒为 false，否则离开拦截会误报。 */
 export function settingsDirty(): boolean {
     if (!editing) return false;
-    return DRAFT_KEYS.some(k => draft[k].trim() !== (state.cfg[k] ?? '').trim());
+    return DRAFT_KEYS.some(k => draft[k].trim() !== (state.cfg[k] ?? '').trim())
+        || draftFontSize !== (state.cfg.editorFontSize || 14)
+        || draftUiFontSize !== (state.cfg.uiFontSize || 14);
 }
 
 /* ---------------- 快捷键表 ---------------- */
@@ -135,6 +143,15 @@ function fontRow(): string {
     );
 }
 
+function fontSizeRow(id: 'editorFontSize' | 'uiFontSize', label: string, value: number, min: number, max: number, hint: string): string {
+    return row(
+        label,
+        `set-${id}`,
+        `<input id="set-${id}" class="input sort" type="number" min="${min}" max="${max}" step="1" value="${value}" />`,
+        hint,
+    );
+}
+
 function tplRow(): string {
     return row(
         'AGENTS.md 模板',
@@ -173,6 +190,10 @@ function syncInputs(): void {
         const inp = document.getElementById(`set-${k}`) as HTMLInputElement | null;
         if (inp) inp.value = draft[k];
     }
+    const size = document.getElementById('set-editorFontSize') as HTMLInputElement | null;
+    if (size) size.value = String(draftFontSize);
+    const uiSize = document.getElementById('set-uiFontSize') as HTMLInputElement | null;
+    if (uiSize) uiSize.value = String(draftUiFontSize);
 }
 
 function syncFontPreview(): void {
@@ -182,6 +203,7 @@ function syncFontPreview(): void {
     box.style.fontFamily = f
         ? `"${f}", Consolas, "Courier New", monospace`
         : 'Consolas, "Cascadia Mono", "Courier New", monospace';
+    box.style.fontSize = `${draftFontSize}px`;
     box.textContent = 'Abc 0123 (){}[] => 中文字体样张';
 }
 
@@ -261,6 +283,8 @@ async function save(): Promise<void> {
         editorCmd: draft.editorCmd.trim(),
         terminalCmd: draft.terminalCmd.trim(),
         editorFont: draft.editorFont.trim(),
+        editorFontSize: draftFontSize,
+        uiFontSize: draftUiFontSize,
         author: draft.author.trim(),
     };
     try {
@@ -294,6 +318,19 @@ function wire(el: HTMLElement): void {
             if (key === 'editorFont') syncFontPreview();
             syncBar();
         });
+    });
+
+    const clampSize = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+    el.querySelector('#set-editorFontSize')?.addEventListener('input', ev => {
+        const v = parseInt((ev.target as HTMLInputElement).value, 10);
+        draftFontSize = clampSize(Number.isFinite(v) ? v : 14, 10, 24);
+        syncFontPreview();
+        syncBar();
+    });
+    el.querySelector('#set-uiFontSize')?.addEventListener('input', ev => {
+        const v = parseInt((ev.target as HTMLInputElement).value, 10);
+        draftUiFontSize = clampSize(Number.isFinite(v) ? v : 14, 12, 18);
+        syncBar();
     });
 
     el.querySelectorAll<HTMLElement>('[data-pick]').forEach(btn => {
@@ -379,6 +416,8 @@ export function renderSettings(): void {
                     ${textRow('editorCmd', '编辑器命令', 'code', '双击文件时用它打开，例如 code、subl')}
                     ${textRow('terminalCmd', '终端命令', 'wt', '在项目目录开终端，例如 wt、powershell')}
                     ${fontRow()}
+                    ${fontSizeRow('editorFontSize', '编辑器字号', draftFontSize, 10, 24, '10–24，样张马上跟着变')}
+                    ${fontSizeRow('uiFontSize', '界面字号', draftUiFontSize, 12, 18, '12–18，保存后生效')}
                 </div>`)}
                 ${section('newproj', '新建项目', '新建向导的默认值', `<div class="set-rows">
                     ${textRow('author', '协议署名', '留空则用项目名', '写进 LICENSE 的版权行')}

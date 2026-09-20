@@ -17,6 +17,8 @@ type Config struct {
 	EditorWidth     int    `json:"editorWidth"`
 	RailWidth       int    `json:"railWidth"`
 	EditorFont      string `json:"editorFont"`
+	EditorFontSize  int    `json:"editorFontSize"`
+	UiFontSize      int    `json:"uiFontSize"`
 	Author          string `json:"author"`
 }
 

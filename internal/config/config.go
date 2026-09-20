@@ -29,6 +29,8 @@ func Default() model.Config {
 		FileShowHidden:  false,
 		FilePreviewOpen: true,
 		EditorWidth:     DefaultEditorWidth,
+		EditorFontSize:  DefaultEditorFontSize,
+		UiFontSize:      DefaultUiFontSize,
 		RailWidth:       DefaultRailWidth,
 	}
 }
@@ -37,6 +39,14 @@ const (
 	DefaultEditorWidth = 580
 	MinEditorWidth     = 260
 	MaxEditorWidth     = 1000
+
+	DefaultEditorFontSize = 14
+	MinEditorFontSize     = 10
+	MaxEditorFontSize     = 24
+
+	DefaultUiFontSize = 14
+	MinUiFontSize     = 12
+	MaxUiFontSize     = 18
 )
 
 const (
@@ -57,6 +67,34 @@ func ClampRailWidth(w int) int {
 		return MaxRailWidth
 	}
 	return w
+}
+
+// ClampUiFontSize 把界面字号收进合理区间，非正数（旧配置没这字段）用默认值。
+func ClampUiFontSize(n int) int {
+	if n <= 0 {
+		return DefaultUiFontSize
+	}
+	if n < MinUiFontSize {
+		return MinUiFontSize
+	}
+	if n > MaxUiFontSize {
+		return MaxUiFontSize
+	}
+	return n
+}
+
+// ClampEditorFontSize 把编辑器字号收进合理区间，非正数（旧配置没这字段）用默认值。
+func ClampEditorFontSize(n int) int {
+	if n <= 0 {
+		return DefaultEditorFontSize
+	}
+	if n < MinEditorFontSize {
+		return MinEditorFontSize
+	}
+	if n > MaxEditorFontSize {
+		return MaxEditorFontSize
+	}
+	return n
 }
 
 // ClampEditorWidth 把编辑器宽度收进合理区间，0 表示用默认值。
@@ -155,6 +193,8 @@ func Load() model.Config {
 	}
 	cfg.EditorWidth = ClampEditorWidth(cfg.EditorWidth)
 	cfg.RailWidth = ClampRailWidth(cfg.RailWidth)
+	cfg.EditorFontSize = ClampEditorFontSize(cfg.EditorFontSize)
+	cfg.UiFontSize = ClampUiFontSize(cfg.UiFontSize)
 	cfg.EditorFont = SanitizeFont(cfg.EditorFont)
 	cfg.Author = strings.TrimSpace(cfg.Author)
 	return cfg

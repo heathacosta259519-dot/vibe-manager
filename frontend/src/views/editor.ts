@@ -87,7 +87,7 @@ function langLabel(ext: string): string {
 /** 颜色全部走项目既有的 CSS 变量，日间/夜间自动跟随。 */
 function themeFor(dark: boolean): Extension {
     return EditorView.theme({
-        '&': { height: '100%', color: 'var(--text)', backgroundColor: 'var(--panel)', fontSize: '13px' },
+        '&': { height: '100%', color: 'var(--text)', backgroundColor: 'var(--panel)', fontSize: 'var(--ed-font-size, 13px)' },
         '&.cm-focused': { outline: 'none' },
         '.cm-scroller': { fontFamily: 'var(--ed-font, Consolas, "Cascadia Mono", "Courier New", monospace)', lineHeight: '1.55' },
         '.cm-content': { caretColor: 'var(--text)', padding: '6px 0' },
